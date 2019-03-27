@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+    <!-- Good default declaration:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+        * Enable inline JS: add 'unsafe-inline' to default-src
+        * Enable eval(): add 'unsafe-eval' to default-src
+    * Create your own at http://cspisawesome.com
+    -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <title>Hello World</title>
+</head>
+
+<body>
+    <div class="app">
+        <h1>PhoneGap</h1>
+        <div id="deviceready" class="blink">
+            <p class="event listening">Connecting to Device</p>
+            <!-- <p class="event received">Device is Ready</p> -->
+            <img id="myImg">
+        </div>
+        <button onclick="getDeviceInfo()">1：读取硬件设备信息</button>
+        <button onclick="getAvatar()">2：拍照</button>
+        <button onclick="getNotification()">3：提示消息</button>
+        <button onclick="record()">4：录音</button>
+        <button onclick="getAccInfo()">获取加速传感器的位置</button>
+        <button onclick="watchPos()">监听加速传感器</button>
+        <button oncanplay="clearPos()">取消监听</button>
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript">
+        // phonegap 初始化程序
+        app.initialize();
+        // 获取硬件信息
+        function getDeviceInfo(){
+            alert("当前运动平台："+device.platform);
+            alert("当前设备编号："+device.uuid);
+            alert("当前版本号："+device.version);
+        }
+        // 拍照
+        function getAvatar(){
+            navigator.camera.getPicture(
+                function(url){
+                    alert("拍照成功");
+                    // 获取图片元素
+                    var pic = document.getElementById("myImg");
+                    // 获取url 拍照图片的地址
+                    pic.src = url;
+                },
+                function(){
+                    alert("拍照失败")
+                },
+                {quality: 50}
+            );
+        }
+        // 提示消息
+        function getNotification(){
+            // 1：震动
+            navigator.notification.vibrate(1000);
+            // 2：连续蜂鸣
+            navigator.notification.beep(3);
+            // 3：提示语确认框 原生
+            navigator.notification.alert("操作成功");
+            navigator.notification.confirm("是否删除指定数据",function(e){
+                alert(e);
+            })
+        }
+        // 录制音频
+        function record(){
+            navigator.device.capture.captureAudio(
+                function(list){
+                    alert(list.length);
+                    alert(list[0].name);
+                },
+                function(){
+                    alert("录制失败")
+                },
+                {limit: 3}
+            )
+        }
+        // 获取加速传感器的位置信息
+        function getAccInfo(){
+            navigator.accelerometer.getCurrentAcceleration(
+                function(opt){
+                    alert(opt.x+":"+opt.y+":"+opt.z)
+                },
+                function(){
+                    alert("获取加速信息失败")
+                }
+            );
+        }
+        // 监听传感器的位置
+        var mid = null;
+        function watchPos(){
+            mid = navigator.accelerometer.watchAcceleration(function(e){
+                alert(e.x+":"+e.y+":"+e.z);
+            },
+            function(){
+                alert("监听失败")
+            },
+            {frequency: 1000});            
+        }
+        // 取消监听
+        function clearPos(){
+            navigator.accelerometer.clearWatch(mid);
+        }
+    </script>
+</body>
+
+</html>
